@@ -26,7 +26,7 @@ export function ListView() {
   );
 }
 
-function DaySection({ day, index, prev, next }: { day: DayWithContent; index: number; prev?: DayWithContent; next?: DayWithContent }) {
+function DaySection({ day, index, prev, next }: { day: DayWithContent; index: number; prev: DayWithContent | undefined; next: DayWithContent | undefined }) {
   const progress = useProgressMap();
   const members = useMembers();
   const st = dayState(day, progress, appDate());

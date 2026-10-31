@@ -55,7 +55,10 @@ export function ResourceList({ day, editable = true }: { day: DayWithContent; ed
           className="mt-3 grid gap-2 sm:grid-cols-[1fr_1.4fr_auto]"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!isValidUrl(url.trim())) return toast.error("Please enter a valid http(s) link");
+            if (!isValidUrl(url.trim())) {
+              toast.error("Please enter a valid http(s) link");
+              return;
+            }
             add.mutate(undefined, { onSuccess: () => (setTitle(""), setUrl("")) });
           }}
         >

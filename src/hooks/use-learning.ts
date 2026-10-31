@@ -130,7 +130,7 @@ export function useSetTaskStatus() {
 }
 
 /** Generic roadmap write that refreshes the shared roadmap afterwards. */
-export function useRoadmapMutation<T>(fn: (input: T) => Promise<unknown>, success?: string) {
+export function useRoadmapMutation<T>(fn: (input: T) => PromiseLike<unknown>, success?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: T) => {

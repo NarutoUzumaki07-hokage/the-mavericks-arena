@@ -27,7 +27,7 @@ export function appDate(d: Date | string = new Date()): string {
 }
 
 export function addDays(isoDate: string, n: number): string {
-  const [y, m, d] = isoDate.split("-").map(Number);
+  const [y = 1970, m = 1, d = 1] = isoDate.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d + n));
   return dt.toISOString().slice(0, 10);
 }
@@ -115,7 +115,7 @@ export function kanbanMoveUpdates(
   const statuses = tasks.map((t) => taskStatus(progress, t.id));
   if (statuses.some((s) => s === "in_progress")) return [];
   if (statuses.every((s) => s === "completed") && tasks.length) {
-    const last = tasks[tasks.length - 1];
+    const last = tasks[tasks.length - 1]!;
     return [{ taskId: last.id, status: "in_progress" }];
   }
   const firstTodo = tasks.find((t) => taskStatus(progress, t.id) === "todo");

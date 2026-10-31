@@ -69,7 +69,10 @@ export function TimerPanel({ defaultDayId, compact }: { defaultDayId?: string; c
 
   const applyCustom = () => {
     const n = parseInt(custom, 10);
-    if (!Number.isFinite(n) || n < 1 || n > 720) return toast.error("Enter between 1 and 720 minutes");
+    if (!Number.isFinite(n) || n < 1 || n > 720) {
+      toast.error("Enter between 1 and 720 minutes");
+      return;
+    }
     setMinutes(n);
   };
 
