@@ -4,13 +4,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Flame, Timer, LogOut } from "lucide-react";
 import { Logo } from "./Logo";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCurrentMember, useMembers } from "@/hooks/use-members";
+import { useDailyStats, useOpenSession } from "@/hooks/use-learning";
 import { signOutMember } from "@/lib/session";
-import { SAMPLE, formatMinutes } from "@/features/sample-data";
+import { DAILY_GOAL_SECONDS, formatDuration } from "@/lib/learning";
+import { TimerPanel } from "@/features/learning/TimerPanel";
+import { cn } from "@/lib/utils";
 
 export function AppHeader() {
   const member = useCurrentMember();
   const members = useMembers();
+  const stats = useDailyStats();
+  const open = useOpenSession();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
@@ -32,19 +38,30 @@ export function AppHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Stat icon={<Flame className="size-4" />} label="Streak" value={`${SAMPLE.streakDays}d`} />
-          <Stat
-            icon={<Timer className="size-4" />}
-            label="Focused"
-            value={formatMinutes(SAMPLE.focusedMinutesToday)}
-            className="hidden sm:flex"
-          />
+          <Stat icon={<Flame className="size-4" />} label="Streak" value={`${stats.streak}d`} />
+          <Sheet>
+            <SheetTrigger asChild>
+              <button
+                aria-label="Open focus timer"
+                className={cn(
+                  "brutal-press flex items-center gap-2 border-2 border-ink px-2 py-1.5 shadow-brutal-sm",
+                  open?.status === "running" ? "bg-primary text-primary-foreground" : stats.todaySeconds >= DAILY_GOAL_SECONDS ? "bg-success text-success-foreground" : "bg-background",
+                )}
+              >
+                <Timer className="size-4" />
+                <div className="hidden text-left leading-none sm:block">
+                  <p className="text-[10px] font-bold uppercase opacity-80">{open ? `Timer ${open.status}` : "Focused today"}</p>
+                  <p className="text-sm font-bold">{formatDuration(stats.todaySeconds)}</p>
+                </div>
+              </button>
+            </SheetTrigger>
+            <SheetContent className="w-full overflow-y-auto border-l-2 border-ink sm:max-w-md">
+              <SheetHeader><SheetTitle className="font-display uppercase">Focus</SheetTitle></SheetHeader>
+              <div className="px-4 pb-6"><TimerPanel compact /></div>
+            </SheetContent>
+          </Sheet>
           <MemberAvatar member={member} index={members.findIndex((m) => m.id === member.id)} />
-          <button
-            onClick={signOut}
-            aria-label="Switch member"
-            className="brutal-press grid size-10 place-items-center border-2 border-ink bg-background shadow-brutal-sm"
-          >
+          <button onClick={signOut} aria-label="Sign out" className="brutal-press grid size-10 place-items-center border-2 border-ink bg-background shadow-brutal-sm">
             <LogOut className="size-4" />
           </button>
         </div>
@@ -53,19 +70,9 @@ export function AppHeader() {
   );
 }
 
-function Stat({
-  icon,
-  label,
-  value,
-  className = "flex",
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  className?: string;
-}) {
+function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className={`${className} items-center gap-2 border-2 border-ink bg-background px-2 py-1.5`} title={`${label} (placeholder)`}>
+    <div className="flex items-center gap-2 border-2 border-ink bg-background px-2 py-1.5">
       {icon}
       <div className="leading-none">
         <p className="text-[10px] font-bold uppercase text-muted-foreground">{label}</p>
