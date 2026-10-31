@@ -1,36 +1,33 @@
-import type { MemberSession } from "@/types/member";
+import { supabase } from "@/integrations/supabase/client";
 
-const KEY = "mavericks.session.v1";
+/** Each roster member signs in with a private 6-digit PIN tied to a real account. */
+export function memberEmail(displayName: string) {
+  return `${displayName.toLowerCase()}@mavericks.team`;
+}
 
-export function readSession(): MemberSession | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as MemberSession;
-    return parsed?.memberId ? parsed : null;
-  } catch {
-    return null;
+export function isValidPin(pin: string) {
+  return /^\d{6}$/.test(pin);
+}
+
+export async function authenticateMember(displayName: string, pin: string, firstTime: boolean) {
+  const email = memberEmail(displayName);
+  if (firstTime) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: pin,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    if (error) throw new Error(error.message.includes("roster") ? "This member is already set up." : error.message);
+    if (!data.session) {
+      const res = await supabase.auth.signInWithPassword({ email, password: pin });
+      if (res.error) throw res.error;
+    }
+    return;
   }
+  const { error } = await supabase.auth.signInWithPassword({ email, password: pin });
+  if (error) throw new Error("Wrong PIN. Try again.");
 }
 
-export function writeSession(memberId: string) {
-  const session: MemberSession = { memberId, signedInAt: new Date().toISOString() };
-  window.localStorage.setItem(KEY, JSON.stringify(session));
-  return session;
-}
-
-export function clearSession() {
-  window.localStorage.removeItem(KEY);
-}
-
-/**
- * Authentication entry point. Today it only checks the member exists in the
- * roster; a PIN/password check can be added here later without touching the UI flow.
- */
-export async function authenticateMember(
-  memberId: string,
-  _credential?: string,
-): Promise<MemberSession> {
-  return writeSession(memberId);
+export async function signOutMember() {
+  await supabase.auth.signOut();
 }

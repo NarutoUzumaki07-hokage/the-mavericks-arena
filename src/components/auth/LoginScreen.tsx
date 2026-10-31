@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useMembers } from "@/hooks/use-members";
-import { authenticateMember } from "@/lib/session";
+import { authenticateMember, isValidPin } from "@/lib/session";
+import { useQueryClient } from "@tanstack/react-query";
 import { Logo } from "@/components/layout/Logo";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import {
@@ -18,12 +19,28 @@ export function LoginScreen() {
   const navigate = useNavigate();
   const [memberId, setMemberId] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pin2, setPin2] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const selected = members.find((m) => m.id === memberId);
+  const firstTime = selected ? !selected.is_claimed : false;
+  const canSubmit = !!selected && isValidPin(pin) && (!firstTime || pin === pin2);
 
-  const enter = async () => {
-    if (!memberId) return;
+  const enter = async (e?: FormEvent) => {
+    e?.preventDefault();
+    if (!selected || !canSubmit) return;
     setBusy(true);
-    await authenticateMember(memberId);
-    navigate({ to: "/learning", replace: true });
+    setError(null);
+    try {
+      await authenticateMember(selected.display_name, pin, firstTime);
+      qc.clear();
+      navigate({ to: "/learning", replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not sign in");
+      setBusy(false);
+      qc.invalidateQueries({ queryKey: ["members"] });
+    }
   };
 
   return (
@@ -54,14 +71,14 @@ export function LoginScreen() {
           </div>
         </div>
 
-        <div className="glass-panel p-6 shadow-brutal-lg sm:p-8">
+        <form onSubmit={enter} className="glass-panel p-6 shadow-brutal-lg sm:p-8">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Member check-in</p>
           <h2 className="mt-1 font-display text-2xl uppercase">Who's training today?</h2>
 
           <label htmlFor="member" className="mt-6 block text-sm font-bold">
             Select your name
           </label>
-          <Select value={memberId} onValueChange={setMemberId}>
+          <Select value={memberId} onValueChange={(v) => { setMemberId(v); setPin(""); setPin2(""); setError(null); }}>
             <SelectTrigger
               id="member"
               aria-label="Select your name"
@@ -78,15 +95,40 @@ export function LoginScreen() {
             </SelectContent>
           </Select>
 
+          {selected && (
+            <div className="mt-5 space-y-3">
+              <label htmlFor="pin" className="block text-sm font-bold">
+                {firstTime ? "Create your 6-digit PIN" : "Your 6-digit PIN"}
+              </label>
+              <input
+                id="pin" type="password" inputMode="numeric" autoComplete={firstTime ? "new-password" : "current-password"}
+                maxLength={6} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                className="h-14 w-full border-2 border-ink bg-background px-4 text-center font-display text-2xl tracking-[0.5em] shadow-brutal-sm outline-none focus:border-primary"
+              />
+              {firstTime && (
+                <>
+                  <label htmlFor="pin2" className="block text-sm font-bold">Confirm PIN</label>
+                  <input
+                    id="pin2" type="password" inputMode="numeric" autoComplete="new-password" maxLength={6}
+                    value={pin2} onChange={(e) => setPin2(e.target.value.replace(/\D/g, ""))}
+                    className="h-14 w-full border-2 border-ink bg-background px-4 text-center font-display text-2xl tracking-[0.5em] shadow-brutal-sm outline-none focus:border-primary"
+                  />
+                  <p className="text-xs text-muted-foreground">First time in? This PIN locks your profile to you.</p>
+                </>
+              )}
+            </div>
+          )}
+          {error && <p role="alert" className="mt-4 border-2 border-destructive bg-destructive/10 px-3 py-2 text-sm font-bold text-destructive">{error}</p>}
+
           <button
-            onClick={enter}
-            disabled={!memberId || busy}
+            type="submit"
+            disabled={!canSubmit || busy}
             className="brutal brutal-press mt-6 flex h-14 w-full items-center justify-center gap-2 bg-primary font-display text-lg uppercase text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             Enter the Arena <ArrowRight className="size-5" />
           </button>
           <p className="mt-4 text-xs text-muted-foreground">Private team space · 4 members only</p>
-        </div>
+        </form>
       </div>
     </div>
   );

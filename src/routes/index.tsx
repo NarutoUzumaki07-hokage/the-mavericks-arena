@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LoginScreen } from "@/components/auth/LoginScreen";
 import { membersQuery } from "@/hooks/use-members";
-import { readSession } from "@/lib/session";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -13,8 +13,9 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Private learning and accountability arena for the four Mavericks." },
     ],
   }),
-  beforeLoad: () => {
-    if (readSession()) throw redirect({ to: "/learning" });
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) throw redirect({ to: "/learning" });
   },
   loader: ({ context }) => context.queryClient.ensureQueryData(membersQuery),
   component: LoginScreen,

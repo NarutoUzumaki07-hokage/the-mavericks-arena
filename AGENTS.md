@@ -10,7 +10,10 @@
 <!-- LOVABLE:END -->
 
 ## The Mavericks
-- Member identity = a row in `public.profiles` (fixed 4-name roster, seeded by migration, CHECK + UNIQUE on display_name); no Supabase Auth yet. Why: private 4-person app, PIN auth comes later via `authenticateMember` in `src/lib/session.ts`.
-- Selected member persists in localStorage; protected pages live under the `_arena` pathless layout (`ssr: false`) which validates the session against the roster.
-- Placeholder numbers live only in `src/features/sample-data.ts`, never mixed with DB records.
-- Future tables (learning_days, learning_tasks, member_task_progress, learning_sessions) must reference `public.profiles(id)`.
+- Identity: each roster profile links to one real auth account (`profiles.auth_user_id`), created on first sign-in with a 6-digit PIN using synthetic email `<name>@mavericks.team`; a trigger on auth.users only allows unclaimed roster names. Why: RLS needs a verified identity; a local name is not proof.
+- RLS keys off `public.current_profile_id()`; shared roadmap tables are open to any member, everything personal is scoped to the caller's profile.
+- Focus sessions are written ONLY through SQL functions (start/pause/resume/stop/save/discard/correct_session); clients have SELECT only. Why: elapsed time is computed server-side from timestamps, so hours can't be typed in.
+- Topic progress (member_task_progress.completed_at vs learning_days.scheduled_date) and daily activity (learning_sessions.credited_date) are separate; pure rules live in `src/lib/learning.ts` with tests.
+- Kanban cards are learning days; their column is derived from the member's task progress — never store a separate kanban status.
+- Private files live in private buckets under `<auth uid>/<day id>/...`, enforced by storage policies.
+- Protected pages live under the `_arena` pathless layout (`ssr: false`).
