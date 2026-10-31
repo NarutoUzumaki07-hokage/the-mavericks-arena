@@ -29,7 +29,7 @@ export function LoginScreen() {
   return (
     <div className="grid-paper relative min-h-screen overflow-hidden">
       {/* geometric shapes */}
-      <div aria-hidden className="absolute -left-10 top-24 size-40 rotate-12 border-2 border-ink bg-primary shadow-brutal-lg" />
+      <div aria-hidden className="absolute -left-12 bottom-8 size-40 rotate-12 border-2 border-ink bg-primary shadow-brutal-lg" />
       <div aria-hidden className="absolute -right-8 bottom-20 size-32 rounded-full border-2 border-ink bg-success shadow-brutal-lg" />
       <div aria-hidden className="absolute right-[18%] top-10 hidden size-16 rotate-45 border-2 border-ink bg-destructive shadow-brutal md:block" />
 
