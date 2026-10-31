@@ -10,33 +10,73 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArenaRouteImport } from './routes/_arena'
+import { Route as ArenaLearningRouteImport } from './routes/_arena.learning'
+import { Route as ArenaProfileRouteImport } from './routes/_arena.profile'
+import { Route as ArenaProgressRouteImport } from './routes/_arena.progress'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArenaRoute = ArenaRouteImport.update({
+  id: '/_arena',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArenaLearningRoute = ArenaLearningRouteImport.update({
+  id: '/learning',
+  path: '/learning',
+  getParentRoute: () => ArenaRoute,
+} as any)
+const ArenaProfileRoute = ArenaProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => ArenaRoute,
+} as any)
+const ArenaProgressRoute = ArenaProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => ArenaRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/learning': typeof ArenaLearningRoute
+  '/profile': typeof ArenaProfileRoute
+  '/progress': typeof ArenaProgressRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/learning': typeof ArenaLearningRoute
+  '/profile': typeof ArenaProfileRoute
+  '/progress': typeof ArenaProgressRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_arena': typeof ArenaRouteWithChildren
+  '/_arena/learning': typeof ArenaLearningRoute
+  '/_arena/profile': typeof ArenaProfileRoute
+  '/_arena/progress': typeof ArenaProgressRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/learning' | '/profile' | '/progress'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/learning' | '/profile' | '/progress'
+  id:
+    | '__root__'
+    | '/'
+    | '/_arena'
+    | '/_arena/learning'
+    | '/_arena/profile'
+    | '/_arena/progress'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ArenaRoute: typeof ArenaRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +88,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_arena': {
+      id: '/_arena'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ArenaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_arena/learning': {
+      id: '/_arena/learning'
+      path: '/learning'
+      fullPath: '/learning'
+      preLoaderRoute: typeof ArenaLearningRouteImport
+      parentRoute: typeof ArenaRoute
+    }
+    '/_arena/profile': {
+      id: '/_arena/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ArenaProfileRouteImport
+      parentRoute: typeof ArenaRoute
+    }
+    '/_arena/progress': {
+      id: '/_arena/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof ArenaProgressRouteImport
+      parentRoute: typeof ArenaRoute
+    }
   }
 }
 
+interface ArenaRouteChildren {
+  ArenaLearningRoute: typeof ArenaLearningRoute
+  ArenaProfileRoute: typeof ArenaProfileRoute
+  ArenaProgressRoute: typeof ArenaProgressRoute
+}
+
+const ArenaRouteChildren: ArenaRouteChildren = {
+  ArenaLearningRoute: ArenaLearningRoute,
+  ArenaProfileRoute: ArenaProfileRoute,
+  ArenaProgressRoute: ArenaProgressRoute,
+}
+
+const ArenaRouteWithChildren = ArenaRoute._addFileChildren(ArenaRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ArenaRoute: ArenaRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

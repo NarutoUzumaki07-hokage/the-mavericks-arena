@@ -1,24 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { LoginScreen } from "@/components/auth/LoginScreen";
+import { membersQuery } from "@/hooks/use-members";
+import { readSession } from "@/lib/session";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  ssr: false,
+  head: () => ({
+    meta: [
+      { title: "The Mavericks · Enter the Arena" },
+      { name: "description", content: "Private learning and accountability arena for the four Mavericks." },
+      { property: "og:title", content: "The Mavericks · Enter the Arena" },
+      { property: "og:description", content: "Private learning and accountability arena for the four Mavericks." },
+    ],
+  }),
+  beforeLoad: () => {
+    if (readSession()) throw redirect({ to: "/learning" });
+  },
+  loader: ({ context }) => context.queryClient.ensureQueryData(membersQuery),
+  component: LoginScreen,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
