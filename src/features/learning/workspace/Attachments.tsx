@@ -33,8 +33,8 @@ export function Attachments({ dayId }: { dayId: string }) {
 
   const onFile = async (file: File) => {
     const ext = "." + (file.name.split(".").pop() ?? "").toLowerCase();
-    if (!ALLOWED.includes(ext)) return toast.error("Allowed: PDF, PNG, JPG, DOC, DOCX, TXT");
-    if (file.size > MAX_BYTES) return toast.error("Files must be 20 MB or smaller");
+    if (!ALLOWED.includes(ext)) { toast.error("Allowed: PDF, PNG, JPG, DOC, DOCX, TXT"); return; }
+    if (file.size > MAX_BYTES) { toast.error("Files must be 20 MB or smaller"); return; }
     try {
       setProgress(0);
       const path = `${await ownFolder()}/${dayId}/${crypto.randomUUID()}${ext}`;
@@ -64,14 +64,14 @@ export function Attachments({ dayId }: { dayId: string }) {
     const name = prompt("Rename file", f.file_name)?.trim();
     if (!name) return;
     const { error } = await supabase.from("attachments").update({ file_name: name }).eq("id", f.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     refresh();
   };
   const remove = async (f: Attachment) => {
     if (!confirm(`Delete "${f.file_name}"?`)) return;
     await supabase.storage.from(BUCKET).remove([f.file_path]);
     const { error } = await supabase.from("attachments").delete().eq("id", f.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     refresh();
   };
 

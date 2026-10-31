@@ -150,14 +150,14 @@ function VoiceItem({ note, onChange }: { note: Voice; onChange: () => void }) {
     const name = prompt("Rename recording", note.file_name)?.trim();
     if (!name) return;
     const { error } = await supabase.from("voice_notes").update({ file_name: name }).eq("id", note.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     onChange();
   };
   const remove = async () => {
     if (!confirm("Delete this recording?")) return;
     await supabase.storage.from(BUCKET).remove([note.file_path]);
     const { error } = await supabase.from("voice_notes").delete().eq("id", note.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     onChange();
   };
   const download = async () => {
