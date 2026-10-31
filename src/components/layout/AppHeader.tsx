@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Flame, Timer, LogOut } from "lucide-react";
@@ -57,7 +58,7 @@ function Stat({
   value,
   className = "flex",
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string;
   className?: string;
