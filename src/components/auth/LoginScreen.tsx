@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useMembers } from "@/hooks/use-members";
@@ -27,7 +27,7 @@ export function LoginScreen() {
   const firstTime = selected ? !selected.is_claimed : false;
   const canSubmit = !!selected && isValidPin(pin) && (!firstTime || pin === pin2);
 
-  const enter = async (e?: React.FormEvent) => {
+  const enter = async (e?: FormEvent) => {
     e?.preventDefault();
     if (!selected || !canSubmit) return;
     setBusy(true);

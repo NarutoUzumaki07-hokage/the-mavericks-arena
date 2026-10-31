@@ -5,7 +5,7 @@ import { Flame, Timer, LogOut } from "lucide-react";
 import { Logo } from "./Logo";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { useCurrentMember, useMembers } from "@/hooks/use-members";
-import { clearSession } from "@/lib/session";
+import { signOutMember } from "@/lib/session";
 import { SAMPLE, formatMinutes } from "@/features/sample-data";
 
 export function AppHeader() {
@@ -14,9 +14,10 @@ export function AppHeader() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const signOut = () => {
-    clearSession();
+  const signOut = async () => {
+    await qc.cancelQueries();
     qc.clear();
+    await signOutMember();
     navigate({ to: "/", replace: true });
   };
 
