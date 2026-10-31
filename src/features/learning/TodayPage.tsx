@@ -3,7 +3,7 @@ import { Plus, LayoutList, Columns3 } from "lucide-react";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { useCurrentMember, useMembers } from "@/hooks/use-members";
 import { useDailyStats, useRoadmap } from "@/hooks/use-learning";
-import { DAILY_GOAL_SECONDS, formatDuration } from "@/lib/learning";
+import { DAILY_GOAL_SECONDS } from "@/lib/learning";
 import { cn } from "@/lib/utils";
 import { ListView } from "./ListView";
 import { KanbanView } from "./KanbanView";
@@ -109,4 +109,3 @@ function Stat({ label, value, tone }: { label: string; value: string; tone: "def
   );
 }
 
-export { formatDuration };
