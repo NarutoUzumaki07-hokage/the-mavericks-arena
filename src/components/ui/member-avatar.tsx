@@ -1,7 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Member } from "@/types/member";
-
-const TONES = ["bg-primary", "bg-success", "bg-destructive", "bg-ink"];
+import { getMemberTheme, type Member } from "@/types/member";
 
 export function MemberAvatar({
   member,
@@ -21,12 +19,15 @@ export function MemberAvatar({
       />
     );
   }
+
+  const theme = getMemberTheme(member.display_name, index);
+
   return (
     <div
       aria-hidden
       className={cn(
-        "grid size-10 shrink-0 place-items-center border-2 border-ink font-display text-primary-foreground",
-        TONES[index % TONES.length],
+        "grid size-10 shrink-0 place-items-center border-2 border-ink font-display",
+        theme.avatarClasses,
         className,
       )}
     >
@@ -34,3 +35,4 @@ export function MemberAvatar({
     </div>
   );
 }
+

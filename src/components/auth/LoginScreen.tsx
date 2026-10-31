@@ -6,6 +6,8 @@ import { authenticateMember, isValidPin } from "@/lib/session";
 import { useQueryClient } from "@tanstack/react-query";
 import { Logo } from "@/components/layout/Logo";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { getMemberTheme } from "@/types/member";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -13,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 
 export function LoginScreen() {
   const members = useMembers();
@@ -87,12 +90,20 @@ export function LoginScreen() {
               <SelectValue placeholder="Choose a Maverick" />
             </SelectTrigger>
             <SelectContent className="rounded-none border-2 border-ink">
-              {members.map((m) => (
-                <SelectItem key={m.id} value={m.id} className="py-3 text-base font-bold">
-                  {m.display_name}
-                </SelectItem>
-              ))}
+              {members.map((m) => {
+                const theme = getMemberTheme(m.display_name);
+                return (
+                  <SelectItem key={m.id} value={m.id} className="py-3 text-base font-bold">
+                    <div className="flex items-center gap-2">
+                      <span className={cn("size-3.5 shrink-0 border-2 border-ink", theme.bgClass)} />
+                      <span>{m.display_name}</span>
+                      <span className="text-xs font-normal text-muted-foreground">({theme.colorName})</span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
+
           </Select>
 
           {selected && (
